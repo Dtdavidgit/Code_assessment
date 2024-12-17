@@ -10,12 +10,12 @@ def load_and_validate_data(input_file):
     except Exception as e:
         raise ValueError(f"Error reading the CSV file: {e}")
 
-    # Ensure required columns exist
+    # Check the columns of the input data
     required_columns = ['species', 'phylum', 'count']
     if not all(col in df.columns for col in required_columns):
         raise ValueError(f"The CSV file must contain the following columns: {required_columns}")
     
-    # Handle missing or invalid data
+    # Check if the input file contains invalid or missing data
     df = df.dropna(subset=['species', 'phylum', 'count'])  # Drop rows with missing values
     df['count'] = pd.to_numeric(df['count'], errors='coerce')  # Convert 'count' to numeric
     df = df.dropna(subset=['count'])  # Drop rows where 'count' is invalid
@@ -23,8 +23,8 @@ def load_and_validate_data(input_file):
 
     return df
 
-# Function to compute summary statistics
-def compute_summary_statistics(df):
+# Function to calculate summary statistics
+def calculate_summary_statistics(df):
     total_species_count = df.groupby('phylum')['count'].sum().reset_index()
     total_species_count.columns = ['Phylum', 'Total Species Count']
     
@@ -40,15 +40,15 @@ def compute_summary_statistics(df):
 
     return summary_df
 
-# Function to generate a bar chart
-def generate_bar_chart(summary_df, sort_by='abundance', output_png='phylum_species_count', resolution=(300, 300), color_scheme='d3'):
+# Function to plot a bar chart
+def plot_bar_chart(summary_df, sort_by='abundance', output_png='phylum_species_count', resolution=(300, 300), color_scheme='d3'):
     # Sorting based on the user's choice
     if sort_by == 'abundance':
         summary_df_sorted = summary_df.sort_values(by='Total Species Count', ascending=False)
     elif sort_by == 'alphabetical':
         summary_df_sorted = summary_df.sort_values(by='Phylum', ascending=True)
     else:
-        raise ValueError("Invalid sorting option. Use 'total' or 'alphabetical'.")
+        raise ValueError("Invalid sorting option. Use 'abundance' or 'alphabetical'.")
 
     # Define color palette using D3's category20 colors
     if color_scheme == 'd3':
@@ -63,7 +63,7 @@ def generate_bar_chart(summary_df, sort_by='abundance', output_png='phylum_speci
     else:
         colors = 'tomato'  # Default color scheme
 
-    # Generate the bar chart with the specified resolution
+    # Plot the bar chart with the specified resolution
     plt.figure(figsize=(12, 8), dpi=resolution[0])
     plt.bar(summary_df_sorted['Phylum'], summary_df_sorted['Total Species Count'], color=[next(colors) for _ in range(len(summary_df_sorted))])
     plt.xlabel('Phylum', fontsize=14)
@@ -72,7 +72,7 @@ def generate_bar_chart(summary_df, sort_by='abundance', output_png='phylum_speci
     plt.xticks(rotation=45, ha='right', fontsize=14)
     plt.tight_layout()
 
-    # Save and show the chart
+    # Save the chart
     plt.savefig(str(output_png) + '.png', dpi=resolution[0])
 
 # Function to save summary statistics to a CSV file
@@ -83,9 +83,9 @@ def save_summary_to_csv(summary_df, output_file):
 # Main function to analyze the taxonomic data
 def analyze_taxonomic_data(input_file, output_file, output_png, sort_by='total', resolution=(300, 300), color_scheme='d3'):
     df = load_and_validate_data(input_file)
-    summary_df = compute_summary_statistics(df)
+    summary_df = calculate_summary_statistics(df)
     save_summary_to_csv(summary_df, output_file)
-    generate_bar_chart(summary_df, sort_by, output_png, resolution, color_scheme)
+    plot_bar_chart(summary_df, sort_by, output_png, resolution, color_scheme)
 
 # Entry point for the script
 if __name__ == '__main__':
