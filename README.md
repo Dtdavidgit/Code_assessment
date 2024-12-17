@@ -58,7 +58,7 @@ The script is already containerized, and you can use the Docker image to run it 
 You can run the Python script using Docker:
 
 
-    `docker run -v $(pwd):/app taxonomic_analysis  -i taxonomic_data.csv -o output_summary.csv --sort abundance --dpi 300 --color d3` 
+    docker run -v $(pwd):/app taxonomic_analysis  -i taxonomic_data.csv -o output_summary.csv --sort abundance --dpi 300 --color d3
     
 Explanation of the command:
 
